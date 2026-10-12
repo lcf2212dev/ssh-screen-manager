@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=SSH Screen Manager
+Comment=View and control your computers over SSH
+Exec=ssh-screen-manager
+Icon=io.github.ssh_screen_manager.Remote
+Terminal=false
+Categories=Network;RemoteAccess;GTK;
+Keywords=SSH;Wayland;screens;monitors;remote;desktop;
+StartupNotify=true
