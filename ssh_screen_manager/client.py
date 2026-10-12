@@ -46,10 +46,12 @@ def build_help_dialog():
     dialog = Adw.Dialog(title="Help", content_width=520, content_height=640)
     toolbar = Adw.ToolbarView()
     toolbar.add_top_bar(Adw.HeaderBar())
-    page = Adw.PreferencesPage()
+    scroll = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True)
+    page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6,
+                   margin_start=12, margin_end=12, margin_top=6, margin_bottom=18)
 
     def chapter(title, description):
-        page.add(Adw.PreferencesGroup(title=title, description=description))
+        page.append(Adw.PreferencesGroup(title=title, description=description))
 
     chapter("What this app does",
             "SSH Screen Manager shows the screens of another computer that is already signed in to GNOME, "
@@ -66,7 +68,7 @@ def build_help_dialog():
             "It does not scan the network or accept a new host key. "
             "Refresh devices checks again. Add computer saves a name or address that is not listed yet.")
     chapter("Control and screens",
-            "The Keyboard and mouse switch turns control on or off. Off is view only. "
+            "The Keyboard and mouse button turns control on or off. Off is view only. "
             "In Connection options, Send system shortcuts forwards keys such as Alt+Tab while a screen is focused. "
             "GNOME may ask you to allow that. "
             "The expand button on a screen fills your display with that screen. "
@@ -82,7 +84,7 @@ def build_help_dialog():
         ("Ctrl+Alt+Esc", "Release the keyboard and mouse, and leave full screen"),
     ):
         shortcuts.add(Adw.ActionRow(title=keys, subtitle=meaning))
-    page.add(shortcuts)
+    page.append(shortcuts)
     chapter("If a computer is unavailable",
             "It needs to be on, signed in, and unlocked. It also needs to accept your SSH key and have this app installed. "
             "A locked screen is reported as unavailable. Install the app there, then refresh the list.")
@@ -94,7 +96,10 @@ def build_help_dialog():
             "ssh-screen-manager opens this window. "
             "ssh-screen-manager --host NAME --connect opens it and connects. "
             "ssh-screen-manager --check reports whether this computer can be viewed, without sharing its screen.")
-    toolbar.set_content(page)
+    scroll.set_child(page)
+    # Opening the dialog must not jump to the shortcut rows.
+    scroll.get_child().set_scroll_to_focus(False)
+    toolbar.set_content(scroll)
     dialog.set_child(toolbar)
     return dialog
 
@@ -285,7 +290,6 @@ class Window(Adw.ApplicationWindow):
         self.help_button.set_tooltip_text("Help")
         self.help_button.update_property([Gtk.AccessibleProperty.LABEL], ["Help"])
         self.help_button.connect("clicked", lambda button: self.show_help())
-        header.pack_end(self.help_button)
         header.pack_end(self.fullscreen_button)
         self.options_button = Gtk.MenuButton(icon_name="open-menu-symbolic", tooltip_text="Connection options")
         options = Gtk.Popover()
@@ -313,6 +317,7 @@ class Window(Adw.ApplicationWindow):
         options.set_child(settings_box)
         self.options_button.set_popover(options)
         header.pack_end(self.options_button)
+        header.pack_end(self.help_button)
         self.connect("notify::fullscreened", self.fullscreen_changed)
         content.append(header)
         bar = Gtk.Box(spacing=8)
